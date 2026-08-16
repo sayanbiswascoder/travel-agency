@@ -1,5 +1,9 @@
 import Link from 'next/link';
-import { destination, packages } from './lib/travel-data';
+import ScrollLink from './components/scroll-link';
+import { destination } from './lib/travel-data';
+import { getPackages } from './lib/package-store2';
+
+const packages = getPackages();
 
 export default function HomePage() {
   return (
@@ -17,9 +21,9 @@ export default function HomePage() {
           </div>
 
           <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-            <Link href="#packages">Packages</Link>
-            <Link href="#experience">Experience</Link>
-            <Link href="#reviews">Reviews</Link>
+            <ScrollLink targetId="packages">Packages</ScrollLink>
+            <ScrollLink targetId="experience">Experience</ScrollLink>
+            <ScrollLink targetId="reviews">Reviews</ScrollLink>
           </div>
 
           <Link href={`/booking/${packages[0].slug}`} className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">
@@ -32,17 +36,17 @@ export default function HomePage() {
         <section className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 pt-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:pt-16">
           <div>
             <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-              Bali specialists
+              Sundarban specialists
             </span>
             <h1 className="mt-6 max-w-xl text-5xl font-semibold tracking-[-0.05em] text-slate-900 sm:text-6xl">
-              Let Bali slow your life down.
+              Let Sundarban slow your life down.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-8 text-slate-600">{destination.summary}</p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="#packages" className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">
+              <ScrollLink targetId="packages" className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">
                 Explore packages
-              </Link>
+              </ScrollLink>
               <Link href={`/booking/${packages[0].slug}`} className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50">
                 Book a getaway
               </Link>
@@ -74,7 +78,7 @@ export default function HomePage() {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">From</p>
-                  <p className="mt-1 text-xl font-semibold text-slate-900">${packages[0].price}</p>
+                  <p className="mt-1 text-xl font-semibold text-slate-900">₹{packages[0].price}</p>
                 </div>
               </div>
             </div>
@@ -85,7 +89,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Our packages</p>
-              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">Pick your Bali mood</h2>
+              <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">Pick your Sundarban mood</h2>
             </div>
             <Link href={`/booking/${packages[0].slug}`} className="text-sm font-semibold text-slate-700 transition hover:text-slate-900">
               Need help choosing? Let’s plan it.
@@ -110,7 +114,7 @@ export default function HomePage() {
 
                   <div className="mt-5 flex items-center justify-between text-sm text-slate-600">
                     <span>{pkg.duration}</span>
-                    <span className="text-lg font-semibold text-slate-900">${pkg.price}</span>
+                    <span className="text-lg font-semibold text-slate-900">₹{pkg.price}</span>
                   </div>
 
                   <div className="mt-6 flex gap-3">
@@ -142,7 +146,7 @@ export default function HomePage() {
                 },
                 {
                   title: 'Local guidance',
-                  description: 'Private drivers, culture-led itineraries, and insider recommendations from people who know Bali best.',
+                  description: 'Private drivers, culture-led itineraries, and insider recommendations from people who know Sundarban best.',
                 },
                 {
                   title: 'Easy planning',
@@ -172,7 +176,7 @@ export default function HomePage() {
             <div className="mt-8 grid gap-6 lg:grid-cols-3">
               {[
                 '“The villas were beautiful, the itinerary felt effortless, and every detail felt carefully considered.”',
-                '“We wanted a romantic Bali trip and got exactly that—sunset dinners, scenic views, and zero stress.”',
+                '“We wanted a romantic Sundarban trip and got exactly that—sunset dinners, scenic views, and zero stress.”',
                 '“Astra took the overwhelm out of planning. It felt premium without being complicated.”',
               ].map((quote, index) => (
                 <blockquote key={quote} className="rounded-[1.8rem] border border-slate-200 bg-slate-50 p-6 text-slate-700">
@@ -193,7 +197,7 @@ export default function HomePage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">A</div>
             <span className="font-medium text-slate-800">Astra Travels</span>
           </div>
-          <p>Crafting Bali journeys with thoughtful design and effortless ease.</p>
+          <p>Crafting Sundarban journeys with thoughtful design and effortless ease.</p>
         </div>
       </footer>
     </div>

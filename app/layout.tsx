@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Astra Travels | Bali Escape Collection',
-  description: 'Modern travel packages for a luxurious Bali getaway.',
+  title: 'Astra Travels | Sundarban Escape Collection',
+  description: 'Modern travel packages for a luxurious Sundarban getaway.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} data-scroll-behavior="smooth">
       <body className="min-h-full bg-[#f7f2ed] text-slate-900">{children}</body>
     </html>
   );

@@ -1,0 +1,24 @@
+
+> travel-agency@0.1.0 dev
+> next dev --port 3002
+
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://10.106.20.67:3002
+- Environments: .env.local
+✓ Ready in 1222ms
+✓ Running next.config.ts took 101ms
+
+ GET / 200 in 762ms (next.js: 419ms, application-code: 343ms)
+ GET /booking/mangrove-mystic-cruise 200 in 1172ms (next.js: 1115ms, application-code: 57ms)
+ GET /payment?slug=mangrove-mystic-cruise&title=Mystic+Mangrove+Cruise&totalCost=5998&email=sayanbiswas6073%40outlook.com&firstName=Sayan&lastName=Biswas&mobile=%2B919932981720&travelers=2&travelDate=2026-08-28 200 in 93ms (next.js: 54ms, application-code: 39ms)
+ POST /api/razorpay/order 500 in 458ms (next.js: 163ms, application-code: 295ms)
+ POST /api/razorpay/order 500 in 149ms (next.js: 8ms, application-code: 142ms)
+ POST /api/razorpay/order 500 in 136ms (next.js: 8ms, application-code: 127ms)
+ POST /api/razorpay/order 500 in 41ms (next.js: 13ms, application-code: 28ms)
+ POST /api/razorpay/order 500 in 86ms (next.js: 6ms, application-code: 80ms)
+ POST /api/razorpay/order 500 in 178ms (next.js: 7ms, application-code: 171ms)
+ POST /api/razorpay/order 500 in 70ms (next.js: 8ms, application-code: 62ms)
+ POST /api/razorpay/order 500 in 30ms (next.js: 6ms, application-code: 23ms)
+ POST /api/razorpay/order 500 in 138ms (next.js: 9ms, application-code: 128ms)
+[?25h
