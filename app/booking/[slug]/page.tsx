@@ -9,7 +9,7 @@ export default async function BookingPage({
 }) {
   const { slug } = await params;
 
-  const res = await fetch(`http://localhost:3000/api/packages/${slug}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT}/api/packages/${slug}`);
   if (!res.ok) {
     notFound();
   }

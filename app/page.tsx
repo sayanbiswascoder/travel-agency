@@ -5,7 +5,7 @@ import Package from './types/package';
 
 export default async function HomePage() {
   // Fetch packages from public API
-  const res = await fetch('http://localhost:3000/api/admin/packages');
+  const res = await fetch(`${process.env.NEXT_PUBLIC_ENDPOINT}/api/admin/packages`);
   const data = await res.json();
   const packages: Package[] = data?.packages || [];
 
