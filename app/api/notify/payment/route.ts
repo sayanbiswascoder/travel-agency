@@ -1,7 +1,7 @@
 ﻿import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs';
+import connectToDatabase from '../../../lib/mongodb';
+import BookingModel from '../../../lib/bookingModel';
 import { sendBookingInvoiceEmail } from '@/app/utils/email';
 import { createInvoicePdf, type BookingInvoice } from '@/app/utils/invoice';
 
@@ -28,24 +28,30 @@ type PaymentNotificationPayload = {
   title?: unknown;
 };
 
-// Simple file-backed session store under tmp/sessions
-function sessionsDir() {
-  return path.join(process.cwd(), 'tmp', 'sessions');
+// DB-backed session storage using bookings collection
+async function createBookingSession(data: Record<string, any>) {
+  await connectToDatabase();
+  const doc = await BookingModel.create({
+    packageSlug: data.slug || '',
+    packageTitle: data.title || data.packageName || '',
+    firstName: data.firstName || '',
+    lastName: data.lastName || '',
+    name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+    email: data.email || '',
+    phone: data.mobile || '',
+    guests: typeof data.travelers === 'number' ? data.travelers : Number(data.travelers || 1),
+    startDate: data.travelDate || '',
+    totalCost: typeof data.totalCost === 'number' ? data.totalCost : Number(data.totalCost || 0),
+    status: 'payment_pending',
+  });
+  return doc;
 }
 
-function writeSession(id: string, data: Record<string, any>) {
-  const dir = sessionsDir();
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `${id}.json`);
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function readSession(id: string) {
-  const file = path.join(sessionsDir(), `${id}.json`);
-  if (!fs.existsSync(file)) return null;
+async function readBookingSession(id: string) {
+  await connectToDatabase();
   try {
-    const text = fs.readFileSync(file, 'utf-8');
-    return JSON.parse(text);
+    const doc = await BookingModel.findById(id).lean();
+    return doc || null;
   } catch (e) {
     return null;
   }
@@ -70,10 +76,20 @@ export async function POST(request: Request) {
         createdAt: new Date().toISOString(),
       };
 
-      const sessionId = crypto.randomUUID();
-      writeSession(sessionId, sessionData);
+      // Persist session data into bookings collection and return booking id as sessionId
+      const doc = await createBookingSession({
+        slug: sessionData.slug,
+        title: sessionData.title,
+        totalCost: sessionData.totalCost,
+        email: sessionData.email,
+        firstName: sessionData.firstName,
+        lastName: sessionData.lastName,
+        mobile: sessionData.mobile,
+        travelers: sessionData.travelers,
+        travelDate: sessionData.travelDate,
+      });
 
-      return NextResponse.json({ sessionId });
+      return NextResponse.json({ sessionId: doc._id.toString() });
     }
 
     // If the client is fetching a previously created session
@@ -82,10 +98,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Missing sessionId' }, { status: 400 });
       }
 
-      const session = readSession(body.sessionId);
-      if (!session) {
+      const sessionDoc = await readBookingSession(body.sessionId);
+      if (!sessionDoc) {
         return NextResponse.json({ message: 'Session not found' }, { status: 404 });
       }
+
+      const session = {
+        slug: sessionDoc.packageSlug || '',
+        title: sessionDoc.packageTitle || sessionDoc.name || '',
+        totalCost: sessionDoc.totalCost || 0,
+        email: sessionDoc.email || '',
+        firstName: sessionDoc.firstName || '',
+        lastName: sessionDoc.lastName || '',
+        mobile: sessionDoc.phone || '',
+        travelers: sessionDoc.guests ? String(sessionDoc.guests) : '1',
+        travelDate: sessionDoc.startDate || '',
+      };
 
       return NextResponse.json({ session });
     }
