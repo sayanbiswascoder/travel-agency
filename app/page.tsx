@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import ScrollLink from './components/scroll-link';
 import { destination } from './lib/travel-data';
-import { getPackages } from './lib/package-store2';
+import Package from './types/package';
 
-const packages = getPackages();
+export default async function HomePage() {
+  // Fetch packages from public API
+  const res = await fetch('http://localhost:3000/api/admin/packages');
+  const data = await res.json();
+  const packages: Package[] = data?.packages || [];
 
-export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#f7f2ed] text-slate-900">
       <header className="mx-auto max-w-6xl px-6 py-6">
@@ -26,19 +29,22 @@ export default function HomePage() {
             <ScrollLink targetId="reviews">Reviews</ScrollLink>
           </div>
 
-          <Link href={`/booking/${packages[0].slug}`} className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">
-            Plan my trip
-          </Link>
+          {packages.length > 0 && (
+            <Link href={`/booking/${packages[0].slug}`} className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">
+              Plan my trip
+            </Link>
+          )}
         </nav>
       </header>
 
       <main>
-        <section className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 pt-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:pt-16">
-          <div>
-            <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
-              Sundarban specialists
-            </span>
-            <h1 className="mt-6 max-w-xl text-5xl font-semibold tracking-[-0.05em] text-slate-900 sm:text-6xl">
+        {packages.length > 0 && (
+          <section className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 pt-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:pt-16">
+            <div>
+              <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                Sundarban specialists
+              </span>
+              <h1 className="mt-6 max-w-xl text-5xl font-semibold tracking-[-0.05em] text-slate-900 sm:text-6xl">
               Let Sundarban slow your life down.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-8 text-slate-600">{destination.summary}</p>
@@ -47,9 +53,11 @@ export default function HomePage() {
               <ScrollLink targetId="packages" className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">
                 Explore packages
               </ScrollLink>
-              <Link href={`/booking/${packages[0].slug}`} className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50">
-                Book a getaway
-              </Link>
+              {packages.length > 0 && (
+                <Link href={`/booking/${packages[0].slug}`} className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-50">
+                  Book a getaway
+                </Link>
+              )}
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -83,7 +91,7 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> )}
 
         <section id="packages" className="mx-auto max-w-6xl px-6 py-20">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -91,9 +99,11 @@ export default function HomePage() {
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Our packages</p>
               <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">Pick your Sundarban mood</h2>
             </div>
-            <Link href={`/booking/${packages[0].slug}`} className="text-sm font-semibold text-slate-700 transition hover:text-slate-900">
-              Need help choosing? Let’s plan it.
-            </Link>
+            {packages.length > 0 && (
+              <Link href={`/booking/${packages[0].slug}`} className="text-sm font-semibold text-slate-700 transition hover:text-slate-900">
+                Need help choosing? Let’s plan it.
+              </Link>
+            )}
           </div>
 
           <div className="mt-10 grid gap-8 md:grid-cols-2 xl:grid-cols-4">

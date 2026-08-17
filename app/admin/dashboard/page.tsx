@@ -160,9 +160,9 @@ export default function AdminDashboard() {
               <div key={b.id} className="rounded border bg-white p-3">
                 <div className="text-sm text-slate-500">{new Date(b.createdAt).toLocaleString()}</div>
                 <div className="text-lg font-semibold">{b.firstName} {b.lastName} — {b.packageName || b.slug}</div>
-                <div className="text-sm text-slate-600">Email: {b.email} • Mobile: {b.mobile || b.mobileNumber}</div>
-                <div className="mt-2 text-sm">Travelers: {b.travelers}</div>
-                <div className="mt-1 text-sm">Date: {b.travelDate}</div>
+                <div className="text-sm text-slate-600">Email: {b.email} • Mobile: {b.phone || b.mobileNumber}</div>
+                <div className="mt-2 text-sm">Travelers: {b.guests}</div>
+                <div className="mt-1 text-sm">Date: {b.startDate}</div>
                 <div className="mt-2 text-sm text-slate-700">Notes: {b.notes}</div>
               </div>
             ))}

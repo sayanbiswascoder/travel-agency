@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getPackageBySlug } from '../../lib/package-store2';
 
 export default async function PackageDetailPage({
   params,
@@ -8,7 +7,13 @@ export default async function PackageDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const pkg = getPackageBySlug(slug);
+
+  const res = await fetch(`http://localhost:3000/api/packages/${slug}`);
+  if (!res.ok) {
+    notFound();
+  }
+  const data = await res.json();
+  const pkg = data?.package;
 
   if (!pkg) {
     notFound();

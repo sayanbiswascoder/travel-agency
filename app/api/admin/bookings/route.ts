@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import connectToDatabase from '../../../lib/mongodb';
+import BookingModel from '../../../lib/bookingModel';
 
-const STORE_DIR = path.join(process.cwd(), 'tmp');
-const BOOKING_FILE = path.join(STORE_DIR, 'bookings.json');
+export const runtime = 'nodejs';
+
 const SESS_DIR = path.join(process.cwd(), 'tmp', 'admin-sessions');
 
 function isAuthenticated(request: Request) {
@@ -17,41 +19,34 @@ function isAuthenticated(request: Request) {
   }
 }
 
-function readBookings() {
-  try {
-    if (!fs.existsSync(STORE_DIR)) fs.mkdirSync(STORE_DIR, { recursive: true });
-    if (!fs.existsSync(BOOKING_FILE)) fs.writeFileSync(BOOKING_FILE, '[]', 'utf-8');
-    const raw = fs.readFileSync(BOOKING_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('Failed to read bookings', e);
-    return [];
-  }
-}
-
 export async function GET(request: Request) {
   if (!isAuthenticated(request)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const bookings = readBookings();
-  return NextResponse.json({ bookings });
+
+  try {
+    await connectToDatabase();
+    const bookings = await BookingModel.find().sort({ createdAt: -1 }).lean();
+    return NextResponse.json({ bookings });
+  } catch (e) {
+    console.error('Admin bookings DB GET error', e);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
   if (!isAuthenticated(request)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
-    if (!body || !body.id) return NextResponse.json({ message: 'Missing id' }, { status: 400 });
-    const bookings = readBookings();
-    const idx = bookings.findIndex((b: any) => b.id === body.id);
-    if (idx === -1) return NextResponse.json({ message: 'Booking not found' }, { status: 404 });
+    if (!body || (!body.id && !body._id)) return NextResponse.json({ message: 'Missing id' }, { status: 400 });
 
-    // allow status updates and other note changes
-    const allowed = ['status', 'notes'];
-    allowed.forEach((k) => {
-      if (Object.prototype.hasOwnProperty.call(body, k)) bookings[idx][k] = body[k];
+    await connectToDatabase();
+    const id = body._id || body.id;
+    const allowed: any = {};
+    ['status', 'notes'].forEach((k) => {
+      if (Object.prototype.hasOwnProperty.call(body, k)) allowed[k] = body[k];
     });
-
-    fs.writeFileSync(BOOKING_FILE, JSON.stringify(bookings, null, 2), 'utf-8');
-    return NextResponse.json({ ok: true, booking: bookings[idx] });
+    const updated = await BookingModel.findByIdAndUpdate(id, { $set: allowed }, { new: true }).lean();
+    if (!updated) return NextResponse.json({ message: 'Booking not found' }, { status: 404 });
+    return NextResponse.json({ ok: true, booking: updated });
   } catch (e) {
     console.error('Admin bookings PUT error', e);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });

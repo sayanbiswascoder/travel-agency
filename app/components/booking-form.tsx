@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { TravelPackage } from '../lib/package-store2';
+import Package from '../types/package';
 
-export default function BookingForm({ pkg }: { pkg: TravelPackage }) {
+export default function BookingForm({ pkg }: { pkg: Package }) {
   const [submitted, setSubmitted] = useState(false);
   const [formState, setFormState] = useState({
     firstName: '',

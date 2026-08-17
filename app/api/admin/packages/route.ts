@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getPackages as loadPkgs, savePackages as persistPkgs } from '../../../lib/package-store2';
 import fs from 'fs';
 import path from 'path';
+import connectToDatabase from '../../../lib/mongodb';
+import PackageModel from '../../../lib/packageModel';
+
+export const runtime = 'nodejs';
 
 const SESS_DIR = path.join(process.cwd(), 'tmp', 'admin-sessions');
 
@@ -18,7 +21,9 @@ function isAuthenticated(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const pkgs = loadPkgs();
+    console.log('Admin packages GET: using MongoDB');
+    await connectToDatabase();
+    const pkgs = await PackageModel.find().sort({ createdAt: -1 }).lean();
     return NextResponse.json({ packages: pkgs });
   } catch (e) {
     console.error('Admin packages GET error', e);
@@ -33,20 +38,16 @@ export async function PUT(request: Request) {
     const body = await request.json();
     if (!body || !body.slug) return NextResponse.json({ message: 'Missing slug' }, { status: 400 });
 
-    const pkgs = loadPkgs();
-    const idx = pkgs.findIndex((p: any) => p.slug === body.slug);
-    if (idx === -1) return NextResponse.json({ message: 'Package not found' }, { status: 404 });
+      await connectToDatabase();
+      const allowedFields = ['title', 'price', 'summary', 'description', 'badge', 'image', 'duration', 'rating', 'features', 'itinerary'];
+      const update: any = {};
+      allowedFields.forEach((k) => {
+        if (Object.prototype.hasOwnProperty.call(body, k)) update[k] = body[k];
+      });
 
-    // Apply allowed updates
-    const allowed = ['title', 'price', 'summary', 'description', 'badge', 'image', 'duration', 'rating'];
-    allowed.forEach((k) => {
-      if (Object.prototype.hasOwnProperty.call(body, k)) (pkgs[idx] as any)[k] = body[k];
-    });
-
-    const ok = persistPkgs(pkgs);
-    if (!ok) return NextResponse.json({ message: 'Failed to save' }, { status: 500 });
-
-    return NextResponse.json({ ok: true, package: pkgs[idx] });
+      const updated = await PackageModel.findOneAndUpdate({ slug: body.slug }, { $set: update }, { new: true, upsert: false }).lean();
+      if (!updated) return NextResponse.json({ message: 'Package not found' }, { status: 404 });
+      return NextResponse.json({ ok: true, package: updated });
   } catch (e) {
     console.error('Admin package update error', e);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });

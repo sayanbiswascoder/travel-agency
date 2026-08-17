@@ -1,60 +1,38 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import connectToDatabase from '../../lib/mongodb';
+import BookingModel from '../../lib/bookingModel';
 
-const STORE_DIR = path.join(process.cwd(), 'tmp');
-const BOOKING_FILE = path.join(STORE_DIR, 'bookings.json');
-
-function ensureStore() {
-  if (!fs.existsSync(STORE_DIR)) fs.mkdirSync(STORE_DIR, { recursive: true });
-  if (!fs.existsSync(BOOKING_FILE)) fs.writeFileSync(BOOKING_FILE, '[]', 'utf-8');
-}
-
-function readBookings() {
-  try {
-    ensureStore();
-    const raw = fs.readFileSync(BOOKING_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('Failed to read bookings', e);
-    return [];
-  }
-}
-
-function writeBookings(bookings: any[]) {
-  try {
-    ensureStore();
-    fs.writeFileSync(BOOKING_FILE, JSON.stringify(bookings, null, 2), 'utf-8');
-    return true;
-  } catch (e) {
-    console.error('Failed to write bookings', e);
-    return false;
-  }
-}
+export const runtime = 'nodejs';
 
 export async function GET() {
-  const bookings = readBookings();
-  return NextResponse.json({ bookings });
+  try {
+    await connectToDatabase();
+    const bookings = await BookingModel.find().sort({ createdAt: -1 }).lean();
+    return NextResponse.json({ bookings });
+  } catch (e) {
+    console.error('DB bookings GET error', e);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const now = new Date().toISOString();
-    const booking = {
-      id: `${now}-${Math.random().toString(36).slice(2, 9)}`,
-      createdAt: now,
-      status: 'pending',
-      ...body,
-    };
-
-    const bookings = readBookings();
-    bookings.unshift(booking);
-    writeBookings(bookings);
-
-    return NextResponse.json({ ok: true, booking });
+    console.log('Booking create request body:', body);
+    await connectToDatabase();
+    const doc = await BookingModel.create({
+      packageSlug: body.packageSlug || body.slug || body.package || '',
+      name: body.name,
+      email: body.email,
+      phone: body.mobile || body.phone || '',
+      guests: body.travelers || body.guests || 1,
+      startDate: body.travelDate || body.startDate,
+      notes: body.notes,
+      status: body.status || 'pending',
+    });
+    return NextResponse.json({ ok: true, booking: doc });
   } catch (e) {
-    console.error('Booking create error', e);
+    console.error('Booking create DB error', e);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
